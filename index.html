@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>T-Minus Studio | Countdown Lock Screen Designer</title>
+  <style>
+    :root {
+      --bg: #050811;
+      --panel: #0f1626;
+      --border: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --active: #f59e0b;
+      --done: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body {
+      background: radial-gradient(circle at 80% 10%, #13203c, var(--bg) 65%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    header {
+      max-width: 1200px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .brand h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.4px; }
+    .badge {
+      background: rgba(56, 189, 248, 0.14);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+    }
+    .status-pill {
+      font-size: 12px;
+      color: var(--done);
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .workspace {
+      max-width: 1200px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 410px;
+      gap: 28px;
+      align-items: start;
+    }
+    @media (max-width: 960px) {
+      .workspace { grid-template-columns: 1fr; justify-items: center; }
+    }
+    .controls {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      width: 100%;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+    }
+    .controls-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .controls h2 { font-size: 16px; color: var(--text); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1.4fr 1.1fr 0.9fr; gap: 10px; }
+    @media (max-width: 600px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+    .field-group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    input[type="text"], input[type="datetime-local"], select {
+      width: 100%;
+      padding: 9px 11px;
+      background: #080c16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--accent); }
+    .milestone-row {
+      display: grid;
+      grid-template-columns: 24px 1fr 92px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .milestone-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--done);
+      cursor: pointer;
+    }
+    .tag-input {
+      text-align: center;
+      font-size: 12px !important;
+      color: var(--accent) !important;
+      font-weight: 600;
+    }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .btn-full { grid-column: 1 / -1; }
+    button {
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+    button:hover { transform: translateY(-1px); opacity: 0.94; }
+    .btn-primary { background: linear-gradient(135deg, #38bdf8, #2563eb); color: #fff; }
+    .btn-accent { background: linear-gradient(135deg, #f59e0b, #d97706); color: #060911; }
+    .btn-secondary { background: #162033; color: var(--text); border: 1px solid var(--border); font-size: 12px; }
+    .btn-danger { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); padding: 6px 10px; font-size: 11px; }
+    .preview-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .phone-frame {
+      width: min(356px, calc(100vw - 64px));
+      aspect-ratio: 356 / 770;
+      height: auto;
+      border-radius: 48px;
+      padding: 12px;
+      background: #1e293b;
+      box-shadow: 0 28px 65px rgba(0,0,0,0.7), inset 0 0 0 2px #334155;
+      position: relative;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 38px;
+      display: block;
+      cursor: pointer;
+    }
+    .helper-note { font-size: 12px; color: var(--muted); text-align: center; max-width: 350px; line-height: 1.4; }
+    .app-message {
+      max-width: 1200px;
+      width: 100%;
+      min-height: 18px;
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+    .app-message.error { color: #fca5a5; }
+    .app-message.success { color: #6ee7b7; }
+    .app-message:empty { display: none; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="badge">HANDSHAKE X GOOGLE CHALLENGE</span>
+      <h1>T-Minus Studio</h1>
+      <span class="status-pill" id="saveIndicator">✓ Auto-Saved</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" onclick="toggleOSOverlay()" id="overlayBtn">Hide OS Guide</button>
+      <button class="btn-secondary" onclick="exportSettingsJSON()">Export Backup</button>
+      <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Import Backup</button>
+      <input type="file" id="importFile" style="display:none" accept=".json" onchange="importSettingsJSON(event)" />
+      <button class="btn-secondary" onclick="launchStandbyMode()">Fullscreen Standby</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="controls">
+      <div class="controls-header">
+        <h2>1. Configure Mission Parameters</h2>
+        <button class="btn-danger" onclick="resetToDefaults()">Reset Default</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="field-group">
+          <label>Mission Preset</label>
+          <select id="presetSelect" onchange="loadPreset(this.value)">
+            <option value="contest">Official Contest Deadline (Nov 23, 11:59 PM PT)</option>
+            <option value="ml">ML Classification Pipeline Launch</option>
+            <option value="swe">SWE & ML Internship Sprint</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>Visual Style Theme</label>
+          <select id="themeSelect" onchange="saveAndRender()">
+            <option value="cyber">Cyber Telemetry (Cyan / Amber)</option>
+            <option value="matrix">Neural Matrix (Emerald / Lime)</option>
+            <option value="solar">Orbital Dawn (Violet / Coral)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field-group">
+          <label>Deadline Title</label>
+          <input type="text" id="titleInput" value="HANDSHAKE X GOOGLE CONTEST" maxlength="35" oninput="saveAndRender()" />
+        </div>
+
+        <div class="field-group">
+          <label>Deadline (Pacific Time)</label>
+          <input type="datetime-local" id="deadlineInput" value="2026-11-23T23:59:59" step="1" onchange="saveAndRender()" />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Subtitle / Focus Metric</label>
+        <input type="text" id="subtitleInput" value="DEADLINE: NOV 23, 11:59 PM PT (1:29 PM IST)" maxlength="65" oninput="saveAndRender()" />
+      </div>
+
+      <div class="field-group">
+        <label>5 Ordered Milestones (Click phone preview to toggle)</label>
+        <div id="milestonesContainer"></div>
+      </div>
+
+      <div class="btn-grid">
+        <button class="btn-primary" onclick="downloadWallpaper('mobile')">Download Mobile PNG (1170×2532)</button>
+        <button class="btn-secondary" onclick="downloadWallpaper('desktop')">Download True 4K PNG (3840×2160)</button>
+        <button class="btn-accent btn-full" onclick="downloadCoverImage()">Download 16:9 Contest Cover Image (1920×1080 PNG)</button>
+      </div>
+    </section>
+
+    <section class="preview-wrapper">
+      <div class="phone-frame" id="phoneFrame">
+        <canvas id="lockCanvas" width="1170" height="2532" title="Click milestone cards on screen to toggle completion"></canvas>
+      </div>
+      <p class="helper-note">
+        <strong>Pacific Time:</strong> The selected wall-clock deadline is interpreted using the America/Los_Angeles timezone rules.
+      </p>
+    </section>
+  </main>
+  <p id="appMessage" class="app-message" role="status" aria-live="polite"></p>
+
+  <script>
+    const STORAGE_KEY = "tminus_studio_state_production";
+
+    const themes = {
+      cyber: {
+        bgTop: "#050811", bgMid: "#0b1528", bgBot: "#05070f",
+        accent: "#38bdf8", active: "#f59e0b", done: "#10b981",
+        cardBg: "rgba(15, 23, 42, 0.88)", grid: "rgba(56, 189, 248, 0.05)"
+      },
+      matrix: {
+        bgTop: "#040d0a", bgMid: "#091e16", bgBot: "#030906",
+        accent: "#34d399", active: "#a3e635", done: "#10b981",
+        cardBg: "rgba(6, 24, 18, 0.88)", grid: "rgba(52, 211, 153, 0.05)"
+      },
+      solar: {
+        bgTop: "#0c0714", bgMid: "#1b102e", bgBot: "#08050d",
+        accent: "#c084fc", active: "#fb7185", done: "#2dd4bf",
+        cardBg: "rgba(24, 14, 41, 0.88)", grid: "rgba(192, 132, 252, 0.05)"
+      }
+    };
+
+    const presets = {
+      contest: {
+        title: "HANDSHAKE X GOOGLE CONTEST",
+        subtitle: "DEADLINE: NOV 23, 11:59 PM PT",
+        deadline: "2026-11-23T23:59:59",
+        milestones: [
+          { text: "Design clock-safe lock screen layout", tag: "DONE", done: true },
+          { text: "Implement live 1s timer & orbital trajectory", tag: "DONE", done: true },
+          { text: "Lock official Pacific Time timezone rules", tag: "DONE", done: true },
+          { text: "Export 16:9 cover & 4K desktop wallpapers", tag: "TODAY", done: false },
+          { text: "Submit entry in Handshake Skills Studio", tag: "NOV 23", done: false }
+        ]
+      },
+      ml: {
+        title: "ML PIPELINE DEPLOYMENT",
+        subtitle: "GOAL: >94% ROC-AUC & ZERO DATA LEAKAGE",
+        deadline: "2026-11-23T23:59:59",
+        milestones: [
+          { text: "Clean dataset & engineer core features", tag: "STAGE 1", done: true },
+          { text: "Benchmark models via Stratified K-Fold", tag: "STAGE 2", done: true },
+          { text: "Fix threshold leakage & tune hyperparams", tag: "T-5 DAYS", done: false },
+          { text: "Wrap model in FastAPI REST endpoint", tag: "T-3 DAYS", done: false },
+          { text: "Publish GitHub repo & live demo link", tag: "LAUNCH", done: false }
+        ]
+      },
+      swe: {
+        title: "SWE & ML INTERN SPRINT",
+        subtitle: "GOAL: 5 PROD PROJECTS + 40 DSA PATTERNS",
+        deadline: "2026-11-23T23:59:59",
+        milestones: [
+          { text: "Finalize ATS resume & GitHub portfolio", tag: "STAGE 1", done: true },
+          { text: "Complete Trees, Graphs & DP problem set", tag: "STAGE 2", done: true },
+          { text: "Review ML system design case studies", tag: "T-5 DAYS", done: false },
+          { text: "Complete 3 timed mock technical rounds", tag: "T-2 DAYS", done: false },
+          { text: "Submit priority role applications", tag: "DEADLINE", done: false }
+        ]
+      }
+    };
+
+    const PACIFIC_TIME_ZONE = "America/Los_Angeles";
+    const MAX_BACKUP_BYTES = 100 * 1024;
+    const pacificPartsFormatter = new Intl.DateTimeFormat("en-US-u-ca-iso8601-nu-latn", {
+      timeZone: PACIFIC_TIME_ZONE,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23"
+    });
+
+    let currentMilestones = JSON.parse(JSON.stringify(presets.contest.milestones));
+    let showOSOverlay = true;
+    let milestoneHitboxes = [];
+    let wakeLockSentinel = null;
+
+    function showMessage(message, type = "") {
+      const node = document.getElementById("appMessage");
+      if (!node) return;
+      node.textContent = message;
+      node.className = `app-message${type ? ` ${type}` : ""}`;
+    }
+
+    function getPacificWallParts(instantMs) {
+      const parts = pacificPartsFormatter.formatToParts(new Date(instantMs));
+      const values = {};
+      for (const part of parts) {
+        if (part.type !== "literal") values[part.type] = Number(part.value);
+      }
+      return {
+        year: values.year,
+        month: values.month,
+        day: values.day,
+        hour: values.hour,
+        minute: values.minute,
+        second: values.second
+      };
+    }
+
+    function sameWallTime(parts, target) {
+      return parts.year === target.year &&
+        parts.month === target.month &&
+        parts.day === target.day &&
+        parts.hour === target.hour &&
+        parts.minute === target.minute &&
+        parts.second === target.second;
+    }
+
+    // Convert a timezone-free datetime-local value as a wall-clock time in Los Angeles.
+    // DST is taken from the IANA timezone database via Intl, not guessed from the month.
+    // During the repeated autumn hour, the earlier occurrence is selected. Nonexistent
+    // spring-forward times are rejected instead of silently shifting the deadline.
+    // A datetime-local value without seconds represents :00; the contest preset includes :59.
+    function pacificWallTimeToDate(value) {
+      const match = /^([1-9]\d{3})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value || "");
+      if (!match) throw new Error("Enter a valid deadline date and time.");
+
+      const target = {
+        year: Number(match[1]),
+        month: Number(match[2]),
+        day: Number(match[3]),
+        hour: Number(match[4]),
+        minute: Number(match[5]),
+        second: match[6] === undefined ? 0 : Number(match[6])
+      };
+
+      if (target.month < 1 || target.month > 12 || target.day < 1 || target.day > 31 ||
+          target.hour > 23 || target.minute > 59 || target.second > 59) {
+        throw new Error("The deadline contains an out-of-range date or time.");
+      }
+
+      const wallAsUtc = new Date(0);
+      wallAsUtc.setUTCFullYear(target.year, target.month - 1, target.day);
+      wallAsUtc.setUTCHours(target.hour, target.minute, target.second, 0);
+      if (wallAsUtc.getUTCFullYear() !== target.year ||
+          wallAsUtc.getUTCMonth() !== target.month - 1 ||
+          wallAsUtc.getUTCDate() !== target.day ||
+          wallAsUtc.getUTCHours() !== target.hour ||
+          wallAsUtc.getUTCMinutes() !== target.minute ||
+          wallAsUtc.getUTCSeconds() !== target.second) {
+        throw new Error("The deadline date is not a real calendar date.");
+      }
+
+      const naiveMs = wallAsUtc.getTime();
+      const sampleHours = [-48, -36, -24, -12, 0, 12, 24, 36, 48];
+      const offsets = new Set();
+
+      for (const hours of sampleHours) {
+        const sampleMs = naiveMs + hours * 60 * 60 * 1000;
+        const wall = getPacificWallParts(sampleMs);
+        const wallUtcMs = Date.UTC(
+          wall.year, wall.month - 1, wall.day,
+          wall.hour, wall.minute, wall.second
+        );
+        offsets.add(wallUtcMs - sampleMs);
+      }
+
+      const candidates = [];
+      for (const offsetMs of offsets) {
+        const candidateMs = naiveMs - offsetMs;
+        if (sameWallTime(getPacificWallParts(candidateMs), target)) {
+          candidates.push(candidateMs);
+        }
+      }
+
+      const uniqueCandidates = [...new Set(candidates)].sort((a, b) => a - b);
+      if (uniqueCandidates.length === 0) {
+        throw new Error("That local time does not exist in Pacific Time because clocks move forward. Choose another time.");
+      }
+
+      return new Date(uniqueCandidates[0]);
+    }
+
+    function validateStateObject(obj) {
+      if (!obj || typeof obj !== "object" || Array.isArray(obj)) return false;
+      if (typeof obj.title !== "string" || obj.title.length > 35) return false;
+      if (typeof obj.subtitle !== "string" || obj.subtitle.length > 65) return false;
+      if (typeof obj.deadline !== "string") return false;
+      if (!Object.prototype.hasOwnProperty.call(themes, obj.theme)) return false;
+      if (!Object.prototype.hasOwnProperty.call(presets, obj.preset)) return false;
+      if (!Array.isArray(obj.milestones) || obj.milestones.length !== 5) return false;
+
+      try {
+        pacificWallTimeToDate(obj.deadline);
+      } catch (_) {
+        return false;
+      }
+
+      return obj.milestones.every((milestone) =>
+        milestone &&
+        typeof milestone.text === "string" && milestone.text.length <= 65 &&
+        typeof milestone.tag === "string" && milestone.tag.length <= 10 &&
+        typeof milestone.done === "boolean"
+      );
+    }
+
+    function getCurrentState() {
+      return {
+        preset: document.getElementById("presetSelect").value,
+        theme: document.getElementById("themeSelect").value,
+        title: document.getElementById("titleInput").value,
+        subtitle: document.getElementById("subtitleInput").value,
+        deadline: document.getElementById("deadlineInput").value,
+        milestones: currentMilestones.map((m) => ({
+          text: m.text,
+          tag: m.tag,
+          done: m.done
+        }))
+      };
+    }
+
+    function applyState(state) {
+      document.getElementById("presetSelect").value = state.preset;
+      document.getElementById("themeSelect").value = state.theme;
+      document.getElementById("titleInput").value = state.title;
+      document.getElementById("subtitleInput").value = state.subtitle;
+      document.getElementById("deadlineInput").value = state.deadline;
+      currentMilestones = state.milestones.map((m) => ({ ...m }));
+      buildMilestoneInputs();
+    }
+
+    function initState() {
+      let saved = null;
+      try {
+        saved = localStorage.getItem(STORAGE_KEY);
+      } catch (error) {
+        showMessage("Local storage is unavailable in this browser. Your changes may not persist after closing the page.", "error");
+      }
+
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (validateStateObject(parsed)) {
+            applyState(parsed);
+          } else {
+            localStorage.removeItem(STORAGE_KEY);
+            showMessage("Saved settings were invalid and have been reset to the default contest setup.", "error");
+          }
+        } catch (error) {
+          try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+          showMessage("Saved settings could not be read. The default contest setup has been loaded.", "error");
+        }
+      }
+
+      buildMilestoneInputs();
+      renderLockScreen();
+    }
+
+    function saveState() {
+      const payload = getCurrentState();
+      if (!validateStateObject(payload)) {
+        showMessage("Settings were not saved. Check the deadline and configuration values.", "error");
+        return false;
+      }
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        const badge = document.getElementById("saveIndicator");
+        badge.textContent = "✓ Saved " + new Date().toLocaleTimeString([], {
+          hour: "2-digit", minute: "2-digit", second: "2-digit"
+        });
+        return true;
+      } catch (error) {
+        console.error("Storage write failed:", error);
+        showMessage("Could not save settings in this browser. Use Export Backup to keep a copy.", "error");
+        return false;
+      }
+    }
+
+    function saveAndRender() {
+      saveState();
+      renderLockScreen();
+    }
+
+    function resetToDefaults() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (error) {
+        showMessage("Browser storage could not be cleared. Default settings will still be loaded for this session.", "error");
+      }
+      loadPreset("contest");
+      showMessage("Default contest settings restored.", "success");
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function exportSettingsJSON() {
+      const state = getCurrentState();
+      if (!validateStateObject(state)) {
+        showMessage("Cannot export: check the deadline and configuration values first.", "error");
+        return;
+      }
+      try {
+        downloadBlob(new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }), "T-Minus-Studio-Backup.json");
+        showMessage("Settings backup exported.", "success");
+      } catch (error) {
+        console.error("Backup export failed:", error);
+        showMessage("Backup export failed in this browser.", "error");
+      }
+    }
+
+    function importSettingsJSON(event) {
+      const input = event.target;
+      const file = input.files && input.files[0];
+      if (!file) return;
+      if (file.size > MAX_BACKUP_BYTES) {
+        showMessage("Import failed: backup files must be 100 KB or smaller.", "error");
+        input.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(loadEvent) {
+        try {
+          const parsed = JSON.parse(loadEvent.target.result);
+          if (!validateStateObject(parsed)) {
+            throw new Error("The backup has an invalid preset, theme, deadline, or milestone structure.");
+          }
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+          applyState(parsed);
+          saveState();
+          renderLockScreen();
+          showMessage("Settings imported and validated successfully.", "success");
+        } catch (error) {
+          console.error("Backup import failed:", error);
+          showMessage(error.message || "Import failed: the selected file is not a valid JSON backup.", "error");
+        } finally {
+          input.value = "";
+        }
+      };
+      reader.onerror = function() {
+        showMessage("Import failed: the selected file could not be read.", "error");
+        input.value = "";
+      };
+      reader.readAsText(file);
+    }
+
+    function buildMilestoneInputs() {
+      const container = document.getElementById("milestonesContainer");
+      container.replaceChildren();
+
+      currentMilestones.forEach((milestone, idx) => {
+        const row = document.createElement("div");
+        row.className = "milestone-row";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = milestone.done;
+        checkbox.setAttribute("aria-label", `Mark milestone ${idx + 1} complete`);
+        checkbox.addEventListener("change", () => toggleMilestone(idx, checkbox.checked));
+
+        const textInput = document.createElement("input");
+        textInput.type = "text";
+        textInput.maxLength = 65;
+        textInput.value = milestone.text;
+        textInput.setAttribute("aria-label", `Milestone ${idx + 1} description`);
+        textInput.addEventListener("input", () => updateMilestoneText(idx, textInput.value));
+
+        const tagInput = document.createElement("input");
+        tagInput.type = "text";
+        tagInput.className = "tag-input";
+        tagInput.maxLength = 10;
+        tagInput.value = milestone.tag;
+        tagInput.setAttribute("aria-label", `Milestone ${idx + 1} tag`);
+        tagInput.addEventListener("input", () => updateMilestoneTag(idx, tagInput.value));
+
+        row.append(checkbox, textInput, tagInput);
+        container.appendChild(row);
+      });
+    }
+
+    function loadPreset(key) {
+      const preset = presets[key];
+      if (!preset) {
+        showMessage("That preset is not available.", "error");
+        return;
+      }
+      document.getElementById("presetSelect").value = key;
+      document.getElementById("titleInput").value = preset.title;
+      document.getElementById("subtitleInput").value = preset.subtitle;
+      document.getElementById("deadlineInput").value = preset.deadline;
+      currentMilestones = JSON.parse(JSON.stringify(preset.milestones));
+      buildMilestoneInputs();
+      saveAndRender();
+    }
+
+    function toggleMilestone(idx, checked) {
+      if (!currentMilestones[idx]) return;
+      currentMilestones[idx].done = Boolean(checked);
+      buildMilestoneInputs();
+      saveAndRender();
+    }
+
+    function updateMilestoneText(idx, value) {
+      if (!currentMilestones[idx]) return;
+      currentMilestones[idx].text = String(value).slice(0, 65);
+      saveAndRender();
+    }
+
+    function updateMilestoneTag(idx, value) {
+      if (!currentMilestones[idx]) return;
+      currentMilestones[idx].tag = String(value).toUpperCase().slice(0, 10);
+      saveAndRender();
+    }
+
+    function toggleOSOverlay() {
+      showOSOverlay = !showOSOverlay;
+      document.getElementById("overlayBtn").textContent = showOSOverlay ? "Hide OS Guide" : "Show OS Guide";
+      renderLockScreen();
+    }
+
+    function getTargetDate() {
+      return pacificWallTimeToDate(document.getElementById("deadlineInput").value);
+    }
+
+    function getCountdownParts() {
+      const now = new Date();
+      let target;
+      try {
+        target = getTargetDate();
+      } catch (error) {
+        return {
+          days: "--", hours: "--", mins: "--", secs: "--",
+          dateStr: "INVALID PACIFIC DEADLINE", expired: false,
+          nowTimeStr: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }),
+          nowDateStr: now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }).toUpperCase()
+        };
+      }
+
+      const diff = target.getTime() - now.getTime();
+      const remaining = Math.max(0, diff);
+      const pad = (n) => String(n).padStart(2, "0");
+      return {
+        days: Math.floor(remaining / 86400000),
+        hours: pad(Math.floor((remaining / 3600000) % 24)),
+        mins: pad(Math.floor((remaining / 60000) % 60)),
+        secs: pad(Math.floor((remaining / 1000) % 60)),
+        dateStr: target.toLocaleString("en-US", {
+          timeZone: PACIFIC_TIME_ZONE,
+          month: "short", day: "numeric", year: "numeric",
+          hour: "numeric", minute: "2-digit", hour12: true, timeZoneName: "short"
+        }),
+        expired: diff <= 0,
+        nowTimeStr: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }),
+        nowDateStr: now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }).toUpperCase()
+      };
+    }
+
+    function setFittedFont(ctx, text, weight, initialPx, minPx, maxWidth) {
+      let px = initialPx;
+      const floor = Math.max(8, minPx);
+      ctx.font = `${weight} ${px}px Inter, sans-serif`;
+      while (px > floor && ctx.measureText(text).width > maxWidth) {
+        px = Math.max(floor, px - 2);
+        ctx.font = `${weight} ${px}px Inter, sans-serif`;
+      }
+      return px;
+    }
+
+    function ellipsizeText(ctx, text, maxWidth) {
+      const suffix = "…";
+      let output = Array.from(text);
+      while (output.length && ctx.measureText(output.join("") + suffix).width > maxWidth) {
+        output.pop();
+      }
+      return output.length ? output.join("") + suffix : suffix;
+    }
+
+    // Draw at most two lines and safely shorten long unbroken words.
+    function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = String(text || "").trim().split(/\s+/).filter(Boolean);
+      if (!words.length) return;
+
+      const lines = [""];
+      for (const word of words) {
+        const current = lines[lines.length - 1];
+        const candidate = current ? `${current} ${word}` : word;
+        if (ctx.measureText(candidate).width <= maxWidth) {
+          lines[lines.length - 1] = candidate;
+          continue;
+        }
+        if (lines.length === 1) {
+          lines.push(word);
+          if (ctx.measureText(word).width > maxWidth) {
+            lines[1] = ellipsizeText(ctx, word, maxWidth);
+          }
+        } else {
+          lines[1] = ellipsizeText(ctx, `${lines[1]} ${word}`.trim(), maxWidth);
+          break;
+        }
+      }
+
+      if (lines.length === 1) {
+        ctx.fillText(lines[0], x, y, maxWidth);
+      } else {
+        lines[0] = ellipsizeText(ctx, lines[0], maxWidth);
+        lines[1] = ellipsizeText(ctx, lines[1], maxWidth);
+        ctx.fillText(lines[0], x, y - lineHeight * 0.35, maxWidth);
+        ctx.fillText(lines[1], x, y + lineHeight * 0.65, maxWidth);
+      }
+    }
+
+    function drawOrbitalTrajectory(ctx, x, y, w, h, milestones, theme, S) {
+      const startX = x + 24 * S;
+      const endX = x + w - 24 * S;
+      const baseY = y + h - 18 * S;
+      const peakY = y + 6 * S;
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.28)";
+      ctx.lineWidth = 4 * S;
+      ctx.setLineDash([8 * S, 8 * S]);
+      ctx.beginPath();
+      ctx.moveTo(startX, baseY);
+      ctx.quadraticCurveTo((startX + endX) / 2, peakY - (baseY - peakY), endX, baseY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const completedCount = milestones.filter(m => m.done).length;
+      const total = milestones.length;
+      const ctrlX = (startX + endX) / 2;
+      const ctrlY = peakY - (baseY - peakY);
+      const getPt = (t) => {
+        const inv = 1 - t;
+        return {
+          px: inv * inv * startX + 2 * inv * t * ctrlX + t * t * endX,
+          py: inv * inv * baseY + 2 * inv * t * ctrlY + t * t * baseY
+        };
+      };
+
+      const targetT = completedCount / total;
+      if (targetT > 0) {
+        ctx.strokeStyle = theme.done;
+        ctx.lineWidth = 6 * S;
+        ctx.beginPath();
+        ctx.moveTo(startX, baseY);
+        for (let step = 0.02; step <= targetT + 0.001; step += 0.02) {
+          const pt = getPt(Math.min(1, step));
+          ctx.lineTo(pt.px, pt.py);
+        }
+        ctx.stroke();
+      }
+
+      for (let i = 0; i <= total; i++) {
+        const t = i / total;
+        const pt = getPt(t);
+        const isPassed = i <= completedCount;
+        const isCurrentCraft = i === completedCount;
+
+        if (isCurrentCraft) {
+          ctx.fillStyle = "rgba(245, 158, 11, 0.28)";
+          ctx.beginPath();
+          ctx.arc(pt.px, pt.py, 15 * S, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.fillStyle = isCurrentCraft ? theme.active : isPassed ? theme.done : "#334155";
+        ctx.beginPath();
+        ctx.arc(pt.px, pt.py, (isCurrentCraft ? 8 : 6) * S, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawLockScreenCanvas(canvas, mode = "mobile") {
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+      const themeKey = document.getElementById("themeSelect").value;
+      const t = themes[themeKey] || themes.cyber;
+      const isDesktop = mode === "desktop";
+      const S = isDesktop ? 1.45 : 1.0;
+
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, t.bgTop);
+      grad.addColorStop(0.5, t.bgMid);
+      grad.addColorStop(1, t.bgBot);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.strokeStyle = t.grid;
+      ctx.lineWidth = 2 * S;
+      const step = Math.round(90 * S);
+      for (let x = 0; x < W; x += step) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+      for (let y = 0; y < H; y += step) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+
+      const radial = ctx.createRadialGradient(W * 0.5, H * 0.48, 30, W * 0.5, H * 0.48, W * 0.65);
+      radial.addColorStop(0, t.grid.replace("0.05", "0.18"));
+      radial.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = radial;
+      ctx.fillRect(0, 0, W, H);
+
+      const { days, hours, mins, secs, dateStr, expired, nowTimeStr, nowDateStr } = getCountdownParts();
+
+      if (showOSOverlay && !isDesktop) {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.26)";
+        ctx.textAlign = "center";
+        ctx.font = "600 40px Inter, sans-serif";
+        ctx.fillText(nowDateStr, W / 2, 250);
+        ctx.font = "700 205px Inter, sans-serif";
+        ctx.fillText(nowTimeStr, W / 2, 455);
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(180, H - 205, 66, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(W - 180, H - 205, 66, 0, Math.PI * 2); ctx.stroke();
+        ctx.font = "600 22px Inter, sans-serif";
+        ctx.fillText("OS LOCK SCREEN SAFE ZONE", W / 2, H - 195);
+      }
+
+      const centerX = W / 2;
+      const startY = isDesktop ? Math.round(160 * S) : 680;
+      const cardW = isDesktop ? Math.round(1820 * S) : W - 120;
+      const cardX = centerX - cardW / 2;
+      const headerH = Math.round(310 * S);
+
+      ctx.fillStyle = t.cardBg;
+      ctx.strokeStyle = t.accent;
+      ctx.lineWidth = 3 * S;
+      ctx.beginPath();
+      ctx.roundRect(cardX, startY, cardW, headerH, 36 * S);
+      ctx.fill();
+      ctx.stroke();
+
+      const title = (document.getElementById("titleInput").value || "").toUpperCase();
+      const subtitle = (document.getElementById("subtitleInput").value || "").toUpperCase();
+      const completedCount = currentMilestones.filter(m => m.done).length;
+      const pct = Math.round((completedCount / currentMilestones.length) * 100);
+      const leftMaxW = cardW * 0.56;
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = t.accent;
+      ctx.font = `700 ${Math.round(24 * S)}px Inter, sans-serif`;
+      ctx.fillText(`ORBITAL TELEMETRY // ${pct}% COMPLETE`, cardX + 44 * S, startY + 54 * S);
+
+      ctx.fillStyle = "#f8fafc";
+      setFittedFont(ctx, title, "800", Math.round(42 * S), Math.round(24 * S), leftMaxW);
+      ctx.fillText(title, cardX + 44 * S, startY + 112 * S);
+
+      ctx.fillStyle = "#94a3b8";
+      setFittedFont(ctx, subtitle, "600", Math.round(22 * S), Math.round(15 * S), leftMaxW);
+      ctx.fillText(subtitle, cardX + 44 * S, startY + 152 * S);
+
+      drawOrbitalTrajectory(ctx, cardX + 30 * S, startY + 185 * S, leftMaxW, Math.round(92 * S), currentMilestones, t, S);
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = t.active;
+      const countdownLabel = expired ? "DEADLINE PASSED" : `T-${days}D ${hours}H`;
+      setFittedFont(ctx, countdownLabel, "800", Math.round(68 * S), Math.round(34 * S), cardW * 0.38);
+      ctx.fillText(countdownLabel, cardX + cardW - 42 * S, startY + 120 * S, cardW * 0.38);
+
+      ctx.fillStyle = "#f8fafc";
+      ctx.font = `700 ${Math.round(34 * S)}px Inter, sans-serif`;
+      ctx.fillText(expired ? "00M : 00S COMPLETE" : `${mins}M : ${secs}S LIVE`, cardX + cardW - 42 * S, startY + 172 * S, cardW * 0.38);
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = `600 ${Math.round(21 * S)}px Inter, sans-serif`;
+      ctx.fillText(`DEADLINE: ${dateStr}`, cardX + cardW - 42 * S, startY + 225 * S);
+
+      let activeFound = false;
+      const listStartY = startY + headerH + Math.round(48 * S);
+      const rowGap = isDesktop ? Math.round(152 * S) : 210;
+      const boxH = Math.round(146 * S);
+
+      if (!isDesktop) milestoneHitboxes = [];
+
+      currentMilestones.forEach((m, i) => {
+        const y = listStartY + i * rowGap;
+        const isActive = !m.done && !activeFound;
+        if (isActive) activeFound = true;
+
+        if (!isDesktop) {
+          milestoneHitboxes.push({ index: i, x: cardX, y: y, w: cardW, h: boxH });
+        }
+
+        if (i < currentMilestones.length - 1) {
+          ctx.strokeStyle = m.done ? t.done : "#334155";
+          ctx.lineWidth = 6 * S;
+          ctx.beginPath();
+          ctx.moveTo(cardX + 68 * S, y + 73 * S);
+          ctx.lineTo(cardX + 68 * S, y + rowGap);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = isActive ? "rgba(245, 158, 11, 0.16)" : m.done ? "rgba(16, 185, 129, 0.11)" : t.cardBg;
+        ctx.strokeStyle = isActive ? t.active : m.done ? t.done : "#1e293b";
+        ctx.lineWidth = (isActive ? 4 : 2) * S;
+
+        ctx.beginPath();
+        ctx.roundRect(cardX + 132 * S, y, cardW - 132 * S, boxH, 28 * S);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = m.done ? t.done : isActive ? t.active : "#1e293b";
+        ctx.beginPath();
+        ctx.arc(cardX + 68 * S, y + 73 * S, 34 * S, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#060913";
+        ctx.textAlign = "center";
+        ctx.font = `800 ${Math.round(29 * S)}px Inter, sans-serif`;
+        ctx.fillText(m.done ? "✓" : `0${i + 1}`, cardX + 68 * S, y + 84 * S);
+
+        const statusText = m.done ? "COMPLETED // STAGE VERIFIED" : isActive ? "ACTIVE NEXT ACTION // FOCUS NOW" : "UPCOMING MILESTONE";
+        const statusX = cardX + 172 * S;
+        const tagRight = cardX + cardW - 34 * S;
+        ctx.textAlign = "right";
+        ctx.fillStyle = isActive ? t.active : m.done ? t.done : t.accent;
+        setFittedFont(ctx, m.tag, "700", Math.round(22 * S), Math.round(12 * S), cardW * 0.22);
+        const tagWidth = Math.min(ctx.measureText(m.tag).width, cardW * 0.22);
+        ctx.fillText(m.tag, tagRight, y + 44 * S, cardW * 0.22);
+
+        ctx.textAlign = "left";
+        ctx.fillStyle = isActive ? t.active : m.done ? t.done : "#64748b";
+        const statusMaxWidth = Math.max(80 * S, tagRight - tagWidth - 18 * S - statusX);
+        setFittedFont(ctx, statusText, "700", Math.round(21 * S), Math.round(11 * S), statusMaxWidth);
+        ctx.fillText(statusText, statusX, y + 44 * S, statusMaxWidth);
+
+        ctx.textAlign = "left";
+        ctx.fillStyle = m.done ? "#cbd5e1" : "#f8fafc";
+        ctx.font = `600 ${Math.round(33 * S)}px Inter, sans-serif`;
+        const textMaxW = cardW - 215 * S;
+        drawWrappedText(ctx, m.text, cardX + 172 * S, y + 98 * S, textMaxW, Math.round(34 * S));
+      });
+    }
+
+    function renderLockScreen() {
+      const canvas = document.getElementById("lockCanvas");
+      drawLockScreenCanvas(canvas, "mobile");
+    }
+
+    document.getElementById("lockCanvas").addEventListener("click", (e) => {
+      const canvas = e.currentTarget;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clickX = (e.clientX - rect.left) * scaleX;
+      const clickY = (e.clientY - rect.top) * scaleY;
+
+      for (const box of milestoneHitboxes) {
+        if (clickX >= box.x && clickX <= box.x + box.w && clickY >= box.y && clickY <= box.y + box.h) {
+          toggleMilestone(box.index, !currentMilestones[box.index].done);
+          break;
+        }
+      }
+    });
+
+    async function launchStandbyMode() {
+      const frame = document.getElementById("lockCanvas");
+      try {
+        if (!document.fullscreenElement) {
+          if (!frame.requestFullscreen) throw new Error("Fullscreen mode is not supported by this browser.");
+          await frame.requestFullscreen();
+        }
+
+        if ("wakeLock" in navigator && window.isSecureContext) {
+          try {
+            wakeLockSentinel = await navigator.wakeLock.request("screen");
+            showMessage("Fullscreen standby is active. Keep this tab open; the browser may release the wake lock when hidden.", "success");
+          } catch (wakeError) {
+            showMessage("Fullscreen is active, but this browser/device did not allow a screen wake lock. The display may still sleep.", "error");
+          }
+        } else {
+          showMessage("Fullscreen is active. Screen Wake Lock is unavailable here, so the device may still sleep.", "error");
+        }
+      } catch (error) {
+        console.error("Standby mode failed:", error);
+        showMessage(error.message || "Could not launch fullscreen standby mode.", "error");
+      }
+    }
+
+    document.addEventListener("visibilitychange", async () => {
+      if (document.visibilityState === "visible" && document.fullscreenElement && "wakeLock" in navigator && window.isSecureContext) {
+        try {
+          if (!wakeLockSentinel || wakeLockSentinel.released) {
+            wakeLockSentinel = await navigator.wakeLock.request("screen");
+          }
+        } catch (error) {
+          console.warn("Wake lock could not be reacquired:", error);
+        }
+      }
+    });
+
+    document.addEventListener("fullscreenchange", async () => {
+      if (!document.fullscreenElement && wakeLockSentinel) {
+        try { await wakeLockSentinel.release(); } catch (_) {}
+        wakeLockSentinel = null;
+      }
+    });
+
+    async function canvasToBlob(canvas) {
+      return new Promise((resolve, reject) => {
+        if (typeof canvas.toBlob !== "function") {
+          try {
+            const dataUrl = canvas.toDataURL("image/png");
+            const parts = dataUrl.split(",");
+            const binary = atob(parts[1]);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            resolve(new Blob([bytes], { type: "image/png" }));
+          } catch (error) { reject(error); }
+          return;
+        }
+        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("The browser could not encode the PNG image.")), "image/png");
+      });
+    }
+
+    async function downloadWallpaper(mode) {
+      const tempCanvas = document.createElement("canvas");
+      const previousOverlay = showOSOverlay;
+      try {
+        showOSOverlay = false;
+        if (mode === "desktop") {
+          tempCanvas.width = 3840;
+          tempCanvas.height = 2160;
+          drawLockScreenCanvas(tempCanvas, "desktop");
+        } else {
+          tempCanvas.width = 1170;
+          tempCanvas.height = 2532;
+          drawLockScreenCanvas(tempCanvas, "mobile");
+        }
+        const blob = await canvasToBlob(tempCanvas);
+        downloadBlob(blob, mode === "desktop" ? "T-Minus-4K-UHD-Desktop.png" : "T-Minus-Mobile-LockScreen.png");
+        showMessage(mode === "desktop" ? "4K desktop wallpaper exported." : "Mobile wallpaper exported.", "success");
+      } catch (error) {
+        console.error("Wallpaper export failed:", error);
+        showMessage(error.message || "Wallpaper export failed. Try a smaller browser tab or another browser.", "error");
+      } finally {
+        showOSOverlay = previousOverlay;
+        renderLockScreen();
+      }
+    }
+
+    function downloadCoverImage() {
+      const cover = document.createElement("canvas");
+      cover.width = 1920;
+      cover.height = 1080;
+      const ctx = cover.getContext("2d");
+      const themeKey = document.getElementById("themeSelect").value;
+      const t = themes[themeKey] || themes.cyber;
+
+      const grad = ctx.createLinearGradient(0, 0, 1920, 1080);
+      grad.addColorStop(0, t.bgTop);
+      grad.addColorStop(0.55, t.bgMid);
+      grad.addColorStop(1, "#090d1a");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1920, 1080);
+
+      ctx.fillStyle = t.accent;
+      ctx.font = "700 26px Inter, sans-serif";
+      ctx.fillText("HANDSHAKE AI SKILLS STUDIO X GOOGLE CHALLENGE", 110, 200);
+
+      ctx.fillStyle = "#f8fafc";
+      ctx.font = "800 72px Inter, sans-serif";
+      ctx.fillText("T-Minus Studio", 110, 305);
+
+      ctx.fillStyle = t.active;
+      ctx.font = "700 40px Inter, sans-serif";
+      ctx.fillText("Live Countdown & 4K Lock Screen Designer", 110, 375);
+
+      const bullets = [
+        "✓ Dynamic Daylight-Saving Aware Pacific Time Offset",
+        "✓ Strict JSON Import Schema & Theme Validation",
+        "✓ Curved Orbital Trajectory Arc & Next-Action Spotlight",
+        "✓ True 4K UHD (3840×2160) & Mobile (1170×2532) Export"
+      ];
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "600 30px Inter, sans-serif";
+      bullets.forEach((b, idx) => {
+        ctx.fillText(b, 110, 495 + idx * 70);
+      });
+
+      const phoneCanvas = document.createElement("canvas");
+      phoneCanvas.width = 1170;
+      phoneCanvas.height = 2532;
+      const prevOverlay = showOSOverlay;
+      showOSOverlay = true;
+      drawLockScreenCanvas(phoneCanvas, "mobile");
+      showOSOverlay = prevOverlay;
+
+      ctx.save();
+      ctx.translate(1260, 75);
+      ctx.fillStyle = "#1e293b";
+      ctx.beginPath();
+      ctx.roundRect(-16, -16, 462, 962, 54);
+      ctx.fill();
+      ctx.drawImage(phoneCanvas, 0, 0, 430, 930);
+      ctx.restore();
+
+      canvasToBlob(cover).then((blob) => {
+        downloadBlob(blob, "T-Minus-Studio-Cover-16x9.png");
+        showMessage("16:9 contest cover exported.", "success");
+      }).catch((error) => {
+        console.error("Cover export failed:", error);
+        showMessage(error.message || "Cover image export failed.", "error");
+      });
+    }
+
+    initState();
+    window.setInterval(renderLockScreen, 1000);
+  </script>
+</body>
+</html>
